@@ -1,12 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from app.models.application import Application
 from app.models.job import Job
 from app.models.candidate import Candidate
 from app.schemas.application import ApplicationCreate, ApplicationUpdate
 from sqlalchemy import update
-from openai import OpenAI
-client = OpenAI(api_key="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")
+import json
+import openai
+client = openai.AsyncOpenAI(api_key="")
 async def createService(db: AsyncSession, application_data: ApplicationCreate):
     application = Application(
         jobId= application_data.jobId,
@@ -38,7 +40,10 @@ async def updateService(db: AsyncSession, application_id: int, application_data:
 
 async def getAllService(db: AsyncSession):
     """ Get all applications """
-    result = await db.execute(select(Application))
+    result = await db.execute(select(Application).options(
+            selectinload(Application.candidate),
+            selectinload(Application.job)
+        ))
     return result.scalars().all()
 
 
@@ -53,31 +58,73 @@ async def mockInterviewService(db: AsyncSession, application_id: int):
 
         candidate_result = await db.execute(select(Candidate).where(Candidate.id == application.candidateId))
         candidate = candidate_result.scalars().first()
+        questions = json.loads(await generate_questions(job.description, candidate.resumeExtractTxt))
 
-        return await generate_questions(job.description, candidate.resumeExtractTxt)
+        return {"questions": questions}
    
-    return []
+    return {"questions": []}
 
 
-def generate_questions(job_description, resume_content):
+async def generate_questions(job_description, resume_content):
     """Generates five interview questions based on job description and resume."""
     prompt = f"""
-    Given the following job description and candidate resume, generate 5 interview questions that test the candidate's relevant skills.
+        Given the following job description and candidate resume, generate 5 interview questions that test the candidate's relevant skills.
 
-    Job Description:
-    {job_description}
+        Return the result as a **valid JSON array of strings only**, without any extra formatting like markdown or code blocks.
 
-    Resume Content:
-    {resume_content}
+        Job Description:
+        {job_description}
 
-    Questions:
-    """
+        Resume Content:
+        {resume_content}
 
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "system", "content": "You are an AI interviewer."}, 
-                  {"role": "user", "content": prompt}]
+        Questions:
+        """
+
+
+    response = await client.chat.completions.create(
+        model="gpt-4o-mini",  # "gpt-4o-mini" does not exist; use "gpt-4o" or a valid model name
+        messages=[
+            {"role": "system", "content": "You are an AI interviewer."},
+            {"role": "user", "content": prompt}
+        ]
     )
     
     return response.choices[0].message.content
+
+
+async def mockInterviewSubmitService(db: AsyncSession, application_id: int, data):
+    qa_text = "\n".join(
+        [f"{i+1}. Q: {item.question}\n   A: {item.answers}" for i, item in enumerate(data.qa)]
+    )
+
+    prompt = f"""
+        Evaluate the overall quality of the following interview responses on a scale of 0 to 10 based on clarity, relevance, and depth. 
+
+        Only return the final average rating as a number.
+
+        Data:
+        {qa_text}
+        """
+    response = await client.chat.completions.create(
+        model="gpt-4o-mini",  # "gpt-4o-mini" does not exist; use "gpt-4o" or a valid model name
+        messages=[
+            {"role": "system", "content": "You are an AI interview evaluator."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    rating = response.choices[0].message.content
+
+    await db.execute(
+        update(Application)
+        .where(Application.id == application_id)
+        .values(
+            rating=float(rating),
+            qa=[item.dict() for item in data.qa]
+        )  # Convert Pydantic model to dictionary
+    )
+    await db.commit()
+
+    return {"msg": "Successfully Submitted"}
+
 

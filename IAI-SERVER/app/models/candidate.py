@@ -20,3 +20,5 @@ class Candidate(Base):
     status = Column(Boolean, default=True)
     createdAt = Column(DateTime, default=datetime.utcnow)
     updatedAt = Column(DateTime, default=datetime.utcnow)
+
+    applications = relationship("Application", back_populates="candidate")

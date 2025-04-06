@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, CheckConstraint
+from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean, ForeignKey, CheckConstraint
 
 from sqlalchemy.orm import relationship
 from app.db.base import Base
@@ -12,10 +12,10 @@ class Application(Base):
     jobId = Column(Integer, ForeignKey("jobs.id"))
     candidateId = Column(Integer, ForeignKey("candidates.id"))
     qa = Column(JSONB, default=[])
-    rating = Column(Integer, default=0)
+    rating = Column(Float, default=0)
     status = Column(String, 
                     CheckConstraint("status IN ('Pending', 'Rejected', 'Interview Inprogress', 'Interview Done')"),
                     default="Pending")
 
-    # job = relationship("job", foreign_keys=[jobId], back_populates="jobs")
-    # candidate = relationship("candidate", foreign_keys=[candidateId], back_populates="candidates")
+    candidate = relationship("Candidate", back_populates="applications")
+    job = relationship("Job", back_populates="applications")

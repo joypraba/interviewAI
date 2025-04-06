@@ -1,0 +1,9 @@
+.card-header {
+    padding-bottom: unset !important;
+}
+.react-datepicker-wrapper {
+    width: 100%;
+}
+.form-control {
+    line-height: 1.9 !important; 
+}

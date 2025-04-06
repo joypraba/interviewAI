@@ -21,4 +21,4 @@ class Job(Base):
     updatedBy = Column(Integer, ForeignKey("recruiters.id"))
 
 
-    # recruiter = relationship("Recruiter", foreign_keys=[createdBy], back_populates="jobs")
+    applications = relationship("Application", back_populates="job")

@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import desc
 from app.models.job import Job
 from app.schemas.job import JobCreate
 
@@ -23,5 +24,5 @@ async def getOneService(db: AsyncSession, job_id: int):
 
 async def getAllService(db: AsyncSession):
     """ Get all jobs """
-    result = await db.execute(select(Job))
+    result = await db.execute(select(Job).order_by(desc(Job.updatedAt)))
     return result.scalars().all()
