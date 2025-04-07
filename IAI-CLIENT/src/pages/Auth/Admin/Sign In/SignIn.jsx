@@ -1,9 +1,10 @@
 import React, {useState} from "react";
 import "./SignIn.css"
-import { Link, useLocation  } from "react-router-dom";
+import { Link, useLocation, useNavigate  } from "react-router-dom";
 // import { Button } from "bootstrap";
 import { logIn } from "../../../../services/Auth";
 const Login = () => {
+  const navigate = useNavigate(); 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const role = params.get("role");
@@ -12,21 +13,37 @@ const Login = () => {
   const [password, setPassword] = useState("")
 
   const signIn = async () => {
+    
     try {
       const data = {
         email,
         password,
         type: role
       }
-      console.log(data)
       const response = await logIn(data)
-      console.log(response)
+      sessionStorage.setItem("acces_data", JSON.stringify(response.data));
+      if (response?.data?.user_type == 1) {
+        console.log(response?.data?.user_type)
+        navigate('/admin/dashboard')
+      } else if (response?.data?.user_type == 2) {
+        navigate('/candidate/dashboard')
+      } else {
+        navigate('/')
+      }
     } catch (e) {
       console.log(e.message)
     }
   }
+  const signUp = () => {
+    if (role == 1) {
+      navigate("/admin/sign-up?role=1")
+    } else if (role == 2) {
+      navigate("/candidate/sign-up?role=2")
+    } else {
+      navigate("/")
+    }
+  }
 
-  console.log("User Role:", role);
   return (
     
     <main className="d-flex w-100">
@@ -93,7 +110,7 @@ const Login = () => {
 
               <div className="text-center mb-3">
                 Don't have an account?{" "}
-                <Link to="/admin/sign-up">Sign up</Link>
+                <a onClick={signUp}>Sign up</a>
               </div>
 
             </div>

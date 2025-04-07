@@ -37,7 +37,7 @@ async def signInService(db: AsyncSession, data: dict):
 
     # Generate JWT token
     access_token = create_access_token(
-        data={"sub": email, "type": user_type},
+        data={"userId": user.id, "email": email, "name": user.name, "type": user_type},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 

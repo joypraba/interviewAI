@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { getAccessData } from "../../utils/Auth";
 const Sidebar = () => {
-
+    const accessData = getAccessData()
     return (
         <nav id="sidebar" className="sidebar js-sidebar">
             <div className="sidebar-content js-simplebar">
@@ -11,8 +12,8 @@ const Sidebar = () => {
 
                 <ul className="sidebar-nav">
                     <li className="sidebar-header">Pages</li>
-
-                    <li className="sidebar-item active">
+                    {accessData.type == 1 ? (<>
+                    <li className="sidebar-item active" >
                         <Link className="sidebar-link" to="/admin/jobs">
                             <i className="align-middle" data-feather="sliders"></i>
                             <span className="align-middle">Job Posting</span>
@@ -30,20 +31,22 @@ const Sidebar = () => {
                             <i className="align-middle" data-feather="user"></i>
                             <span className="align-middle">Applications</span>
                         </Link>
-                    </li>
-
+                    </li></>
+                    ) : ""}
+                    {accessData.type == 2 ? (<>
                     <li className="sidebar-item">
-                        <Link className="sidebar-link" to="/admin/applications">
+                        <Link className="sidebar-link" to="/candidate/jobs">
                             <i className="align-middle" data-feather="user"></i>
                             <span className="align-middle">Jobs</span>
                         </Link>
                     </li>
                     <li className="sidebar-item">
-                        <Link className="sidebar-link" to="/admin/appliedJobs">
+                        <Link className="sidebar-link" to="/candidate/appliedJobs">
                             <i className="align-middle" data-feather="user"></i>
                             <span className="align-middle">Applied Jobs</span>
                         </Link>
                     </li>
+                    </>) : "" }
                 </ul>
             </div>
         </nav>

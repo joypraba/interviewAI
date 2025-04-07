@@ -35,7 +35,7 @@ async def create(
             except json.JSONDecodeError:
                 raise HTTPException(status_code=400, detail="Invalid skills format")
             
-        resumeText, parsedData, resumePath = None, {}, None
+        resumeExtractTxt, parsed_data, resumePath = None, {}, None
         if resume:
             resumeExtractTxt, parsed_data, resumePath = await parseResume(resume, UPLOAD_DIR)
 
@@ -51,8 +51,8 @@ async def create(
             "resumeExtractTxt": resumeExtractTxt,
             "resumePath": resumePath,
             "phone": parsed_data.get("Phones")[0] if parsed_data.get("Phones") and len(parsed_data.get("Phones")) > 0 else "",
-            "experience": parsed_data.get("Experience"),
-            "education": parsed_data.get("Education")
+            "experience": parsed_data.get("Experience") if parsed_data else "",
+            "education": parsed_data.get("Education") if parsed_data else "",
         }
         return await createService(db, candidate_data)
 

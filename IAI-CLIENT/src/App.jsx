@@ -14,11 +14,12 @@ import Application from './pages/Application/Application';
 import Job from './pages/Job/job';
 import AppliedJob from './pages/AppliedJob/AppliedJob';
 import Home from './pages/Home/Home';
+import useTokenValidation from "./hooks/useTokenValidation";
 
 function App() {
+  useTokenValidation();
   return (
     <>
-      <Router>
         <Routes>
         <Route path="/" element={<Home />} />
           <Route path="/admin" element={<SignIn />} />
@@ -38,7 +39,6 @@ function App() {
           {/* </Route> */}
 
         </Routes>
-      </Router>
     </>
   )
 }

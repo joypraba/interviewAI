@@ -8,7 +8,7 @@ from app.schemas.application import ApplicationCreate, ApplicationUpdate
 from sqlalchemy import update
 import json
 import openai
-client = openai.AsyncOpenAI(api_key="")
+client = openai.AsyncOpenAI(api_key="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")
 async def createService(db: AsyncSession, application_data: ApplicationCreate):
     application = Application(
         jobId= application_data.jobId,
